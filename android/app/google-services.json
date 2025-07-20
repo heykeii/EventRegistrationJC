@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "57764613082",
+    "project_id": "juancarlo-e80bf",
+    "storage_bucket": "juancarlo-e80bf.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:57764613082:android:bfe57b236e8ccc90c5cee3",
+        "android_client_info": {
+          "package_name": "com.juancarlo.eventregistration"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAeE8uFcFBQfYwu0NLHp9nYR8l5O1H2aGw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

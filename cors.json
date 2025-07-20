@@ -1,0 +1,11 @@
+[
+    {
+      "origin": [
+        "http://localhost:63095",
+        "http://127.0.0.1:63095"
+      ],
+      "method": ["GET", "POST", "PUT", "DELETE", "HEAD"],
+      "maxAgeSeconds": 3600,
+      "responseHeader": ["Content-Type", "Authorization", "x-goog-meta-custom"]
+    }
+  ]
