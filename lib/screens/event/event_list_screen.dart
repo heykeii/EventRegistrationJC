@@ -179,19 +179,33 @@ class _EventListWithJoinState extends State<_EventListWithJoin> {
     setState(() {
       joining = true;
     });
-    await widget.userService.joinEvent(widget.currentUser.uid, eventId);
-    setState(() {
-      joinedEventIds.add(eventId);
-      joining = false;
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('Joined event!'),
-        backgroundColor: const Color(0xFF10B981),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    try {
+      await widget.userService.joinEvent(widget.currentUser.uid, eventId);
+      setState(() {
+        joinedEventIds.add(eventId);
+        joining = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Joined event!'),
+          backgroundColor: const Color(0xFF10B981),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } catch (e) {
+      setState(() {
+        joining = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString().replaceAll('Exception: ', '')),
+          backgroundColor: Colors.red,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
   }
 
   @override

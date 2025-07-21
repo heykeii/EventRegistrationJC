@@ -87,7 +87,7 @@ class _LoginScreenState extends State<LoginScreen>
       if (user != null && mounted) {
         HapticFeedback.heavyImpact();
         if (user.email == 'admin@gmail.com') {
-          Navigator.pushReplacementNamed(context, '/admin-events');
+          Navigator.pushReplacementNamed(context, '/admin-dashboard');
         } else {
           Navigator.pushReplacement(
             context,

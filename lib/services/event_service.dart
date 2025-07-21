@@ -21,4 +21,9 @@ class EventService {
     return eventsCollection.snapshots().map((snapshot) =>
         snapshot.docs.map((doc) => EventModel.fromMap(doc.id, doc.data() as Map<String, dynamic>)).toList());
   }
+
+  Future<int> getEventCount() async {
+    final query = await eventsCollection.get();
+    return query.size;
+  }
 } 
