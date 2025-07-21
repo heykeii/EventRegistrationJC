@@ -4,6 +4,7 @@ import '../../services/event_service.dart';
 import '../event/event_create_screen.dart';
 import '../../services/user_service.dart';
 import '../../models/user_model.dart';
+import '../../services/auth_service.dart';
 
 class AdminDashboardScreen extends StatelessWidget {
   const AdminDashboardScreen({super.key});
@@ -20,6 +21,18 @@ class AdminDashboardScreen extends StatelessWidget {
         backgroundColor: theme.colorScheme.primary,
         foregroundColor: Colors.white,
         elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout_rounded),
+            tooltip: 'Logout',
+            onPressed: () async {
+              await AuthService().signOut();
+              if (context.mounted) {
+                Navigator.pushReplacementNamed(context, '/login');
+              }
+            },
+          ),
+        ],
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
