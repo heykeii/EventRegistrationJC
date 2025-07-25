@@ -14,6 +14,8 @@ class AuthService {
 
   UserModel? get currentUser => _currentUser;
 
+  set currentUser(UserModel? user) => _currentUser = user;
+
   Future<UserModel?> signIn(String email, String password) async {
     // Query Firestore for user with matching email and password
     final query = await FirebaseFirestore.instance

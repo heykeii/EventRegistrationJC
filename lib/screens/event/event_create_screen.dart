@@ -22,6 +22,29 @@ class _EventCreateScreenState extends State<EventCreateScreen> {
   DateTime? _selectedDate;
   bool _loading = false;
 
+  final List<String> _locationOptions = [
+    'Elements at Centris, Diliman, Quezon City',
+    'Glass Garden, Pasig City',
+    'The Hanging Gardens, Novaliches, Quezon City',
+    'La Pergola Verde, CCP Compound, Pasay',
+    'Lights of Love, Sampaloc, Quezon City',
+    'Brittany Palazzo, Las Piñas',
+    'Concept Space Manila, Quezon City',
+    'Fernwood Gardens, Quezon City',
+    'La Castellana, Intramuros, Manila',
+    'Felicidad Mansion, Roosevelt Avenue, Quezon City',
+    'The Chandelier Events Place',
+    'Vermillion By The Mansion, Salcedo Village, Makati',
+    'The Banking Hall, Diosdado Macapagal Blvd, Pasay City',
+    'Palacio De Maynila, Roxas Boulevard, Malate, Manila',
+    'Blue Leaf Cosmopolitan, Quezon City',
+    'Batangas Lakelands, Lipa, Batangas',
+    'Narra Hill, Tagaytay',
+    'Arocarría, Alfonso, Cavite',
+    'Sampaguita Gardens, Quezon City',
+  ];
+  String? _selectedLocation;
+
   @override
   void initState() {
     super.initState();
@@ -29,6 +52,7 @@ class _EventCreateScreenState extends State<EventCreateScreen> {
       _titleController.text = widget.event!.title;
       _descriptionController.text = widget.event!.description;
       _locationController.text = widget.event!.location;
+      _selectedLocation = widget.event!.location;
       _capacityController.text = widget.event!.capacity.toString();
       _selectedDate = widget.event!.date;
     }
@@ -52,7 +76,7 @@ class _EventCreateScreenState extends State<EventCreateScreen> {
       title: _titleController.text.trim(),
       description: _descriptionController.text.trim(),
       date: _selectedDate!,
-      location: _locationController.text.trim(),
+      location: _selectedLocation ?? '',
       capacity: int.tryParse(_capacityController.text.trim()) ?? 0,
       createdBy: '' // Set admin user id if available
      
@@ -137,8 +161,13 @@ class _EventCreateScreenState extends State<EventCreateScreen> {
                     validator: (v) => v == null || v.isEmpty ? 'Required' : null,
                   ),
                   const SizedBox(height: 18),
-                  TextFormField(
-                    controller: _locationController,
+                  DropdownButtonFormField<String>(
+                    value: _selectedLocation,
+                    items: _locationOptions.map((loc) => DropdownMenuItem(
+                      value: loc,
+                      child: Text(loc, overflow: TextOverflow.ellipsis),
+                    )).toList(),
+                    onChanged: (val) => setState(() => _selectedLocation = val),
                     decoration: InputDecoration(
                       labelText: 'Location',
                       prefixIcon: Icon(Icons.location_on_rounded, color: theme.colorScheme.primary),

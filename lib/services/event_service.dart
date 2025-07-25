@@ -15,6 +15,14 @@ class EventService {
 
   Future<void> deleteEvent(String id) async {
     await eventsCollection.doc(id).delete();
+    // Remove eventId from all users' joinedEventIds
+    final usersCollection = FirebaseFirestore.instance.collection('users');
+    final usersWithEvent = await usersCollection.where('joinedEventIds', arrayContains: id).get();
+    for (var doc in usersWithEvent.docs) {
+      await usersCollection.doc(doc.id).update({
+        'joinedEventIds': FieldValue.arrayRemove([id]),
+      });
+    }
   }
 
   Stream<List<EventModel>> getEvents() {

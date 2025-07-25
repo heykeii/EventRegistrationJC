@@ -1,483 +1,323 @@
 import 'package:flutter/material.dart';
 import '../../models/event_model.dart';
 import '../../services/event_service.dart';
-import '../event/event_create_screen.dart';
 import '../../services/user_service.dart';
-import '../../models/user_model.dart';
+import 'admin_event_list_screen.dart';
 import '../../services/auth_service.dart';
+import 'admin_user_list_screen.dart';
+import '../event/event_create_screen.dart';
+import 'admin_analytics_screen.dart';
 
-class AdminDashboardScreen extends StatelessWidget {
-  const AdminDashboardScreen({super.key});
+// Move brand colors to top-level so all widgets can access them
+const Color kPrimaryBeige = Color(0xFFE8DDD4);
+const Color kSecondaryBeige = Color(0xFFF4F0EC);
+const Color kDarkBeige = Color(0xFFD4C4B0);
+const Color kLightBrown = Color(0xFFB8A082);
+const Color kMediumBrown = Color(0xFF8B7355);
+const Color kDarkBrown = Color(0xFF6B5B47);
+const Color kAccentBrown = Color(0xFF9B8066);
+const Color kGoldAccent = Color(0xFFD4AF37);
+
+class AdminDashboardScreen extends StatefulWidget {
+  const AdminDashboardScreen({Key? key}) : super(key: key);
+
+  @override
+  State<AdminDashboardScreen> createState() => _AdminDashboardScreenState();
+}
+
+class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
+  int _selectedIndex = 0;
+  final eventService = EventService();
+  final userService = UserService();
 
   @override
   Widget build(BuildContext context) {
-    final eventService = EventService();
-    final userService = UserService();
     final theme = Theme.of(context);
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F7FA),
-      appBar: AppBar(
-        title: const Text('Admin Dashboard'),
-        backgroundColor: theme.colorScheme.primary,
-        foregroundColor: Colors.white,
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout_rounded),
-            tooltip: 'Logout',
-            onPressed: () async {
-              await AuthService().signOut();
-              if (context.mounted) {
-                Navigator.pushReplacementNamed(context, '/login');
-              }
-            },
-          ),
-        ],
-      ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      backgroundColor: kSecondaryBeige,
+      body: Row(
         children: [
+          // Sidebar
           Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
+            width: 80,
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [theme.colorScheme.primary, Colors.brown.shade200],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: const BorderRadius.only(
-                bottomLeft: Radius.circular(32),
-                bottomRight: Radius.circular(32),
-              ),
-              boxShadow: [
+              color: kMediumBrown,
+              boxShadow: const [
                 BoxShadow(
-                  color: theme.colorScheme.primary.withOpacity(0.08),
-                  blurRadius: 16,
-                  offset: const Offset(0, 8),
+                  color: Colors.black12,
+                  blurRadius: 12,
+                  offset: Offset(2, 0),
                 ),
               ],
             ),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  'Dashboard Overview',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: -0.5,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Track your platform stats and manage events',
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.85),
-                    fontSize: 16,
-                  ),
-                ),
-                const SizedBox(height: 28),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                Column(
                   children: [
-                    _DashboardStat(
-                      label: 'Total Users',
-                      future: userService.getUserCount(),
-                      icon: Icons.people,
-                      color: Colors.blueAccent,
-                    ),
-                    _DashboardStat(
-                      label: 'Total Events',
-                      future: eventService.getEventCount(),
+                    const SizedBox(height: 32),
+                    _SidebarIcon(
                       icon: Icons.event,
-                      color: Colors.deepPurple,
+                      selected: _selectedIndex == 0,
+                      onTap: () => setState(() => _selectedIndex = 0),
+                      tooltip: 'Events',
+                      selectedColor: kPrimaryBeige,
+                      iconColor: kMediumBrown,
+                    ),
+                    const SizedBox(height: 16),
+                    _SidebarIcon(
+                      icon: Icons.people,
+                      selected: _selectedIndex == 1,
+                      onTap: () => setState(() => _selectedIndex = 1),
+                      tooltip: 'Users',
+                      selectedColor: kPrimaryBeige,
+                      iconColor: kMediumBrown,
+                    ),
+                    const SizedBox(height: 16),
+                    _SidebarIcon(
+                      icon: Icons.analytics,
+                      selected: _selectedIndex == 2,
+                      onTap: () => setState(() => _selectedIndex = 2),
+                      tooltip: 'Analytics',
+                      selectedColor: kPrimaryBeige,
+                      iconColor: kMediumBrown,
+                    ),
+                    const SizedBox(height: 16),
+                    _SidebarIcon(
+                      icon: Icons.settings,
+                      selected: _selectedIndex == 3,
+                      onTap: () => setState(() => _selectedIndex = 3),
+                      tooltip: 'Settings',
+                      selectedColor: kPrimaryBeige,
+                      iconColor: kMediumBrown,
                     ),
                   ],
                 ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 24),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Row(
-              children: const [
-                Icon(Icons.list_alt_rounded, color: Color(0xFF8B7355)),
-                SizedBox(width: 8),
-                Text(
-                  'Event Management',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF6B5B47),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 24),
+                  child: Column(
+                    children: [
+                      CircleAvatar(
+                        radius: 24,
+                        backgroundColor: kPrimaryBeige,
+                        child: Icon(Icons.admin_panel_settings, color: kMediumBrown),
+                      ),
+                      const SizedBox(height: 16),
+                      IconButton(
+                        icon: const Icon(Icons.logout),
+                        color: Colors.white,
+                        tooltip: 'Logout',
+                        onPressed: () async {
+                          await AuthService().signOut();
+                          Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+                        },
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 8),
+          // Main Content
           Expanded(
-            child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(24),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.brown.withOpacity(0.06),
-                    blurRadius: 16,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
-              ),
-              child: StreamBuilder<List<EventModel>>(
-                stream: eventService.getEvents(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-                  if (snapshot.hasError) {
-                    return Center(child: Text('Error: \\${snapshot.error}'));
-                  }
-                  final events = snapshot.data ?? [];
-                  if (events.isEmpty) {
-                    return Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Dashboard Header
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Icon(Icons.event_note, size: 80, color: Colors.grey[300]),
-                          const SizedBox(height: 24),
-                          const Text('No events yet', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600)),
-                          const SizedBox(height: 12),
-                          const Text('Create your first event to get started', style: TextStyle(fontSize: 16)),
-                          const SizedBox(height: 32),
-                          ElevatedButton.icon(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (_) => const EventCreateScreen()),
-                              );
-                            },
-                            icon: const Icon(Icons.add),
-                            label: const Text('Create Event'),
+                          Text('Welcome, Admin', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: kDarkBrown)),
+                          const SizedBox(height: 4),
+                          Text('Manage your events and users', style: TextStyle(fontSize: 16, color: kMediumBrown)),
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.brightness_6_rounded),
+                            onPressed: () {},
+                            tooltip: 'Toggle Dark Mode',
+                          ),
+                          const SizedBox(width: 8),
+                          CircleAvatar(
+                            radius: 22,
+                            backgroundColor: kPrimaryBeige,
+                            child: Icon(Icons.account_circle, color: kMediumBrown, size: 32),
                           ),
                         ],
                       ),
-                    );
-                  }
-                  return RefreshIndicator(
-                    onRefresh: () async {},
-                    child: ListView.separated(
-                      padding: const EdgeInsets.all(16),
-                      itemCount: events.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 14),
-                      itemBuilder: (context, index) {
-                        final event = events[index];
-                        return _buildEventCard(context, event, eventService);
-                      },
+                    ],
+                  ),
+                  const SizedBox(height: 32),
+                  // Summary Row
+                  FutureBuilder<List<EventModel>>(
+                    future: eventService.getEvents().first,
+                    builder: (context, snapshot) {
+                      final events = snapshot.data ?? [];
+                      final totalEvents = events.length;
+                      final upcoming = events.where((e) => e.date.isAfter(DateTime.now())).length;
+                      return SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: [
+                            _SummaryCard(
+                              title: 'Total Events',
+                              value: totalEvents.toString(),
+                              icon: Icons.event,
+                              color: kGoldAccent,
+                            ),
+                            const SizedBox(width: 20),
+                            _SummaryCard(
+                              title: 'Upcoming',
+                              value: upcoming.toString(),
+                              icon: Icons.upcoming_rounded,
+                              color: kGoldAccent,
+                            ),
+                            const SizedBox(width: 20),
+                            FutureBuilder<int>(
+                              future: userService.getUserCount(),
+                              builder: (context, userSnap) {
+                                final users = userSnap.data ?? 0;
+                                return _SummaryCard(
+                                  title: 'Users',
+                                  value: users.toString(),
+                                  icon: Icons.people,
+                                  color: kGoldAccent,
+                                );
+                              },
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 32),
+                  // Main Content Switch
+                  Expanded(
+                    child: IndexedStack(
+                      index: _selectedIndex,
+                      children: const [
+                        AdminEventListScreen(),
+                        AdminUserListScreen(),
+                        AdminAnalyticsScreen(),
+                        Center(child: Text('Settings Section Coming Soon', style: TextStyle(fontSize: 22, color: kMediumBrown))),
+                      ],
                     ),
-                  );
-                },
+                  ),
+                ],
               ),
             ),
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const EventCreateScreen()),
-          );
-        },
-        backgroundColor: theme.colorScheme.primary,
-        foregroundColor: Colors.white,
-        icon: const Icon(Icons.add),
-        label: const Text('New Event'),
-        elevation: 2,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      ),
-    );
-  }
-
-  Widget _buildEventCard(BuildContext context, EventModel event, EventService eventService) {
-    final theme = Theme.of(context);
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      elevation: 2,
-      shadowColor: Colors.black12,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: () {},
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.primary.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Icon(Icons.event, color: theme.colorScheme.primary, size: 20),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(event.title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600), maxLines: 2, overflow: TextOverflow.ellipsis),
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            Icon(Icons.access_time, size: 16, color: Colors.grey[600]),
-                            const SizedBox(width: 4),
-                            Text(event.date.toLocal().toString(), style: TextStyle(color: Colors.grey[600], fontSize: 14)),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.people_alt_rounded),
-                    tooltip: 'View Joined Users',
-                    onPressed: () async {
-                      showModalBottomSheet(
-                        context: context,
-                        shape: const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-                        ),
-                        isScrollControlled: true,
-                        builder: (context) => _JoinedUsersSheet(eventId: event.id),
-                      );
-                    },
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: _getEventStatusColor(event.date).withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      _getEventStatus(event.date),
-                      style: TextStyle(
-                        color: _getEventStatusColor(event.date),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.edit_outlined),
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => EventCreateScreen(event: event)),
-                          );
-                        },
-                        style: IconButton.styleFrom(
-                          backgroundColor: Colors.blue.withOpacity(0.1),
-                          foregroundColor: Colors.blue,
-                        ),
-                        tooltip: 'Edit event',
-                      ),
-                      const SizedBox(width: 8),
-                      IconButton(
-                        icon: const Icon(Icons.delete_outline),
-                        onPressed: () => _showDeleteConfirmation(context, event, eventService),
-                        style: IconButton.styleFrom(
-                          backgroundColor: Colors.red.withOpacity(0.1),
-                          foregroundColor: Colors.red,
-                        ),
-                        tooltip: 'Delete event',
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  String _getEventStatus(DateTime date) {
-    final now = DateTime.now();
-    final difference = date.difference(now).inDays;
-    if (difference < 0) {
-      return 'Past';
-    } else if (difference == 0) {
-      return 'Today';
-    } else if (difference <= 7) {
-      return 'Upcoming';
-    } else {
-      return 'Future';
-    }
-  }
-
-  Color _getEventStatusColor(DateTime date) {
-    final now = DateTime.now();
-    final difference = date.difference(now).inDays;
-    if (difference < 0) {
-      return Colors.grey;
-    } else if (difference == 0) {
-      return Colors.orange;
-    } else if (difference <= 7) {
-      return Colors.green;
-    } else {
-      return Colors.blue;
-    }
-  }
-
-  void _showDeleteConfirmation(BuildContext context, EventModel event, EventService eventService) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: const Text('Delete Event'),
-          content: Text('Are you sure you want to delete "${event.title}"? This action cannot be undone.'),
-          actions: [
-            TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancel')),
-            TextButton(
-              onPressed: () async {
-                Navigator.of(context).pop();
-                await eventService.deleteEvent(event.id);
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Event "${event.title}" deleted'),
-                      backgroundColor: Colors.red,
-                      behavior: SnackBarBehavior.floating,
-                    ),
-                  );
-                }
-              },
-              style: TextButton.styleFrom(foregroundColor: Colors.red),
-              child: const Text('Delete'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-}
-
-class _DashboardStat extends StatelessWidget {
-  final String label;
-  final Future<int> future;
-  final IconData icon;
-  final Color color;
-  const _DashboardStat({required this.label, required this.future, required this.icon, required this.color});
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Container(
-        width: 130,
-        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 12),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, color: color, size: 32),
-            const SizedBox(height: 10),
-            FutureBuilder<int>(
-              future: future,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const SizedBox(height: 24, width: 24, child: CircularProgressIndicator(strokeWidth: 2));
-                }
-                return Text(
-                  snapshot.data?.toString() ?? '-',
-                  style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+      floatingActionButton: _selectedIndex == 0
+          ? FloatingActionButton(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (context) => EventCreateScreen()),
                 );
               },
-            ),
-            const SizedBox(height: 6),
-            Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
-          ],
+              backgroundColor: kGoldAccent,
+              child: const Icon(Icons.add, size: 32),
+              tooltip: 'Add Event',
+            )
+          : null,
+    );
+  }
+}
+
+class _SidebarIcon extends StatelessWidget {
+  final IconData icon;
+  final bool selected;
+  final VoidCallback onTap;
+  final String tooltip;
+  final Color selectedColor;
+  final Color iconColor;
+  const _SidebarIcon({required this.icon, required this.selected, required this.onTap, required this.tooltip, required this.selectedColor, required this.iconColor});
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: tooltip,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: selected
+              ? BoxDecoration(
+                  color: selectedColor,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: iconColor.withOpacity(0.08),
+                      blurRadius: 8,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
+                )
+              : null,
+          child: Icon(icon, color: selected ? iconColor : Colors.white, size: 28),
         ),
       ),
     );
   }
 }
 
-class _JoinedUsersSheet extends StatelessWidget {
-  final String eventId;
-  const _JoinedUsersSheet({required this.eventId});
+class _SummaryCard extends StatelessWidget {
+  final String title;
+  final String value;
+  final IconData icon;
+  final Color color;
+  const _SummaryCard({required this.title, required this.value, required this.icon, required this.color});
   @override
   Widget build(BuildContext context) {
-    final userService = UserService();
-    return FutureBuilder<List<UserModel>>(
-      future: userService.getUsersByJoinedEvent(eventId),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (snapshot.hasError) {
-          return Center(
+    // Responsive width for summary cards
+    double cardWidth = MediaQuery.of(context).size.width < 600 ? 130 : 160;
+    return Container(
+      width: cardWidth,
+      height: 90,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: kPrimaryBeige,
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: [
+          BoxShadow(
+            color: color.withOpacity(0.08),
+            blurRadius: 16,
+            offset: Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.13),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: color, size: 28),
+          ),
+          const SizedBox(width: 14),
+          Flexible(
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.error_outline, size: 64, color: Colors.red[300]),
-                const SizedBox(height: 16),
-                Text('Something went wrong', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: Colors.grey[800])),
-                const SizedBox(height: 8),
-                Text('Error: \\${snapshot.error}', style: TextStyle(color: Colors.grey[600], fontSize: 14), textAlign: TextAlign.center),
+                Text(value, style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: color)),
+                const SizedBox(height: 2),
+                Text(title, style: TextStyle(fontSize: 14, color: kMediumBrown), overflow: TextOverflow.ellipsis),
               ],
             ),
-          );
-        }
-        final users = snapshot.data ?? [];
-        if (users.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.people_alt_rounded, size: 80, color: Colors.grey[300]),
-                const SizedBox(height: 24),
-                 Text('No users have joined this event yet', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600, color: Colors.grey[700])),
-              ],
-            ),
-          );
-        }
-        return ListView.builder(
-          padding: const EdgeInsets.all(16),
-          itemCount: users.length,
-          itemBuilder: (context, index) {
-            final user = users[index];
-            return ListTile(
-              leading: CircleAvatar(
-                backgroundColor: Colors.grey[300],
-                child: Text(user.name.isNotEmpty ? user.name[0] : user.email[0], style: const TextStyle(fontWeight: FontWeight.bold)),
-              ),
-              title: Text(user.name),
-              subtitle: Text(user.email),
-            );
-          },
-        );
-      },
+          ),
+        ],
+      ),
     );
   }
 } 

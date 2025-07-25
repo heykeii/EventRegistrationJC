@@ -113,9 +113,11 @@ class _ProfileScreenState extends State<ProfileScreen>
       address: _addressController.text.trim(),
       age: int.tryParse(_ageController.text.trim()),
       gender: _selectedGender,
+      avatarUrl: _avatarUrl,
     );
     
     await UserService().updateUser(updatedUser);
+    AuthService().currentUser = updatedUser;
     
     setState(() {
       _loading = false;
@@ -620,105 +622,68 @@ class _ProfileScreenState extends State<ProfileScreen>
                               ),
                             ],
                           ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Joined Events',
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                  color: _darkBrown,
-                                  letterSpacing: -0.3,
+                          child: Form(
+                            key: _formKey,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Personal Information',
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: _darkBrown,
+                                    letterSpacing: -0.3,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(height: 16),
-                              _user!.joinedEventIds.isEmpty
-                                  ? Text('You have not joined any events yet.', style: TextStyle(color: _mediumBrown))
-                                  : _JoinedEventsList(joinedEventIds: _user!.joinedEventIds),
-                            ],
-                          ),
-                        ),
-                      ),
-                      SliverToBoxAdapter(
-                        child: Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 24),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(32),
-                            boxShadow: [
-                              BoxShadow(
-                                color: _mediumBrown.withOpacity(0.08),
-                                blurRadius: 20,
-                                offset: const Offset(0, 10),
-                              ),
-                            ],
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(32),
-                            child: Form(
-                              key: _formKey,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Personal Information',
-                                    style: TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
-                                      color: _darkBrown,
-                                      letterSpacing: -0.3,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 24),
-                                  _buildModernTextField(
-                                    controller: _nameController,
-                                    label: 'Full Name',
-                                    icon: Icons.person_outline_rounded,
-                                    validator: (v) => v == null || v.isEmpty ? 'Name is required' : null,
-                                    animationDelay: 0,
-                                  ),
-                                  _buildModernTextField(
-                                    controller: _emailController,
-                                    label: 'Email Address',
-                                    icon: Icons.email_outlined,
-                                    keyboardType: TextInputType.emailAddress,
-                                    validator: (v) => v == null || v.isEmpty ? 'Email is required' : null,
-                                    enabled: false,
-                                    animationDelay: 100,
-                                  ),
-                                  _buildModernDropdown(
-                                    label: 'Gender',
-                                    icon: Icons.wc_outlined,
-                                    options: _genderOptions,
-                                    value: _selectedGender,
-                                    onChanged: (value) => setState(() => _selectedGender = value),
-                                    validator: (v) => v == null || v.isEmpty ? 'Please select gender' : null,
-                                    animationDelay: 200,
-                                  ),
-                                  _buildModernTextField(
-                                    controller: _phoneController,
-                                    label: 'Phone Number',
-                                    icon: Icons.phone_outlined,
-                                    keyboardType: TextInputType.phone,
-                                    animationDelay: 300,
-                                  ),
-                                  _buildModernTextField(
-                                    controller: _ageController,
-                                    label: 'Age',
-                                    icon: Icons.cake_outlined,
-                                    keyboardType: TextInputType.number,
-                                    animationDelay: 400,
-                                  ),
-                                  _buildModernTextField(
-                                    controller: _addressController,
-                                    label: 'Address',
-                                    icon: Icons.location_on_outlined,
-                                    animationDelay: 500,
-                                  ),
-                                  const SizedBox(height: 16),
-                                ],
-                              ),
+                                const SizedBox(height: 24),
+                                _buildModernTextField(
+                                  controller: _nameController,
+                                  label: 'Full Name',
+                                  icon: Icons.person_outline_rounded,
+                                  validator: (v) => v == null || v.isEmpty ? 'Name is required' : null,
+                                  animationDelay: 0,
+                                ),
+                                _buildModernTextField(
+                                  controller: _emailController,
+                                  label: 'Email Address',
+                                  icon: Icons.email_outlined,
+                                  keyboardType: TextInputType.emailAddress,
+                                  validator: (v) => v == null || v.isEmpty ? 'Email is required' : null,
+                                  enabled: false,
+                                  animationDelay: 100,
+                                ),
+                                _buildModernDropdown(
+                                  label: 'Gender',
+                                  icon: Icons.wc_outlined,
+                                  options: _genderOptions,
+                                  value: _selectedGender,
+                                  onChanged: (value) => setState(() => _selectedGender = value),
+                                  validator: (v) => v == null || v.isEmpty ? 'Please select gender' : null,
+                                  animationDelay: 200,
+                                ),
+                                _buildModernTextField(
+                                  controller: _phoneController,
+                                  label: 'Phone Number',
+                                  icon: Icons.phone_outlined,
+                                  keyboardType: TextInputType.phone,
+                                  animationDelay: 300,
+                                ),
+                                _buildModernTextField(
+                                  controller: _ageController,
+                                  label: 'Age',
+                                  icon: Icons.cake_outlined,
+                                  keyboardType: TextInputType.number,
+                                  animationDelay: 400,
+                                ),
+                                _buildModernTextField(
+                                  controller: _addressController,
+                                  label: 'Address',
+                                  icon: Icons.location_on_outlined,
+                                  animationDelay: 500,
+                                ),
+                                const SizedBox(height: 16),
+                              ],
                             ),
                           ),
                         ),
@@ -799,6 +764,8 @@ class _JoinedEventsList extends StatelessWidget {
   final List<String> joinedEventIds;
   const _JoinedEventsList({required this.joinedEventIds});
 
+  static const Color _mediumBrown = Color(0xFF8B7355);
+
   @override
   Widget build(BuildContext context) {
     final eventService = EventService();
@@ -814,7 +781,7 @@ class _JoinedEventsList extends StatelessWidget {
         final allEvents = snapshot.data ?? [];
         final joinedEvents = allEvents.where((e) => joinedEventIds.contains(e.id)).toList();
         if (joinedEvents.isEmpty) {
-          return Text('No joined events found.', style: TextStyle(color: Colors.grey[600]));
+          return Text('You have not joined any events yet.', style: TextStyle(color: _mediumBrown));
         }
         return ListView.separated(
           shrinkWrap: true,
@@ -850,6 +817,266 @@ class _JoinedEventsList extends StatelessWidget {
           },
         );
       },
+    );
+  }
+}
+
+class AdminUserProfileScreen extends StatefulWidget {
+  final String userId;
+  const AdminUserProfileScreen({Key? key, required this.userId}) : super(key: key);
+
+  @override
+  State<AdminUserProfileScreen> createState() => _AdminUserProfileScreenState();
+}
+
+class _AdminUserProfileScreenState extends State<AdminUserProfileScreen> with TickerProviderStateMixin {
+  UserModel? _user;
+  bool _loading = true;
+  late AnimationController _animationController;
+  late AnimationController _avatarController;
+  late Animation<double> _fadeAnimation;
+  late Animation<double> _slideAnimation;
+
+  // Modern Color Palette (reuse from ProfileScreen)
+  static const Color _primaryBeige = Color(0xFFE8DDD4);
+  static const Color _secondaryBeige = Color(0xFFF4F0EC);
+  static const Color _darkBeige = Color(0xFFD4C4B0);
+  static const Color _lightBrown = Color(0xFFB8A082);
+  static const Color _mediumBrown = Color(0xFF8B7355);
+  static const Color _darkBrown = Color(0xFF6B5B47);
+  static const Color _accentBrown = Color(0xFF9B8066);
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 1200),
+      vsync: this,
+    );
+    _avatarController = AnimationController(
+      duration: const Duration(milliseconds: 200),
+      vsync: this,
+    );
+    _fadeAnimation = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeOutCubic),
+    );
+    _slideAnimation = Tween<double>(begin: 50, end: 0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeOutCubic),
+    );
+    _loadUser();
+    _animationController.forward();
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    _avatarController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadUser() async {
+    final userModel = await UserService().getUser(widget.userId);
+    if (userModel != null) {
+      setState(() {
+        _user = userModel;
+        _loading = false;
+      });
+    } else {
+      setState(() {
+        _loading = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: _secondaryBeige,
+      appBar: AppBar(
+        title: const Text('User Profile'),
+        backgroundColor: _mediumBrown,
+        foregroundColor: Colors.white,
+        elevation: 0,
+      ),
+      body: SafeArea(
+        child: _loading
+            ? const Center(child: CircularProgressIndicator())
+            : _user == null
+                ? Center(child: Text('User not found'))
+                : CustomScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    slivers: [
+                      SliverToBoxAdapter(
+                        child: AnimatedBuilder(
+                          animation: _fadeAnimation,
+                          builder: (context, child) {
+                            return Opacity(
+                              opacity: _fadeAnimation.value,
+                              child: Transform.translate(
+                                offset: Offset(0, _slideAnimation.value),
+                                child: Column(
+                                  children: [
+                                    const SizedBox(height: 40),
+                                    // Profile Avatar
+                                    Stack(
+                                      children: [
+                                        CircleAvatar(
+                                          radius: 48,
+                                          backgroundColor: _mediumBrown,
+                                          child: Text(
+                                            _user!.name.isNotEmpty ? _user!.name[0] : _user!.email[0],
+                                            style: const TextStyle(fontSize: 32, color: Colors.white, fontWeight: FontWeight.bold),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 24),
+                                    // User Name
+                                    Text(
+                                      _user?.name ?? 'Unknown User',
+                                      style: TextStyle(
+                                        fontSize: 28,
+                                        fontWeight: FontWeight.bold,
+                                        color: _darkBrown,
+                                        letterSpacing: -0.5,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    // User Email
+                                    Text(
+                                      _user?.email ?? 'No email provided',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        color: _mediumBrown,
+                                        fontWeight: FontWeight.w400,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 32),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      SliverToBoxAdapter(
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 24),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(32),
+                            boxShadow: [
+                              BoxShadow(
+                                color: _mediumBrown.withOpacity(0.08),
+                                blurRadius: 20,
+                                offset: const Offset(0, 10),
+                              ),
+                            ],
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(32),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Personal Information',
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: _darkBrown,
+                                    letterSpacing: -0.3,
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
+                                _buildReadOnlyField('Full Name', _user?.name ?? ''),
+                                _buildReadOnlyField('Email Address', _user?.email ?? ''),
+                                _buildReadOnlyField('Gender', _user?.gender ?? ''),
+                                _buildReadOnlyField('Phone Number', _user?.phone ?? ''),
+                                _buildReadOnlyField('Age', _user?.age?.toString() ?? ''),
+                                _buildReadOnlyField('Address', _user?.address ?? ''),
+                                const SizedBox(height: 16),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      SliverToBoxAdapter(
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                          padding: const EdgeInsets.all(24),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(28),
+                            boxShadow: [
+                              BoxShadow(
+                                color: _mediumBrown.withOpacity(0.08),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Joined Events',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: _darkBrown,
+                                  letterSpacing: -0.3,
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              _user!.joinedEventIds.isEmpty
+                                  ? Text('No joined events.', style: TextStyle(color: _mediumBrown))
+                                  : _JoinedEventsList(joinedEventIds: _user!.joinedEventIds),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SliverToBoxAdapter(
+                        child: SizedBox(height: 20),
+                      ),
+                    ],
+                  ),
+      ),
+    );
+  }
+
+  Widget _buildReadOnlyField(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              color: _mediumBrown,
+              fontWeight: FontWeight.w600,
+              fontSize: 14,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+            decoration: BoxDecoration(
+              color: _secondaryBeige,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Text(
+              value.isNotEmpty ? value : '-',
+              style: TextStyle(
+                color: _darkBrown,
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

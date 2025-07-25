@@ -9,6 +9,7 @@ class UserModel {
   final int? age;
   final String? gender;
   final List<String> joinedEventIds;
+  final String? avatarUrl;
 
   UserModel({
     required this.uid,
@@ -21,6 +22,7 @@ class UserModel {
     this.age,
     this.gender,
     this.joinedEventIds = const [],
+    this.avatarUrl,
   });
 
   Map<String, dynamic> toMap() {
@@ -35,6 +37,7 @@ class UserModel {
       'age': age,
       'gender': gender,
       'joinedEventIds': joinedEventIds,
+      'avatarUrl': avatarUrl,
     };
   }
 
@@ -50,6 +53,7 @@ class UserModel {
       age: map['age'],
       gender: map['gender'],
       joinedEventIds: (map['joinedEventIds'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
+      avatarUrl: map['avatarUrl'],
     );
   }
 } 

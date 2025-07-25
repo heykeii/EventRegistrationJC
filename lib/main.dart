@@ -75,7 +75,7 @@ class MyApp extends StatelessWidget {
         '/': (context) => const AuthGate(),
         '/login': (context) => const LoginScreen(),
         '/register': (context) => const RegisterScreen(),
-        '/home': (context) => const HomeScreen(),
+        '/home': (context) => const MainApp(),  // Change from HomeScreen to MainApp
         '/events': (context) => const EventListScreen(),
         '/my-events': (context) => const MyEventsScreen(),
         '/admin-events': (context) => const AdminEventListScreen(),
@@ -133,7 +133,7 @@ class _AuthGateState extends State<AuthGate> {
           );
         }
         if (snapshot.hasData && snapshot.data != null) {
-          return const HomeScreen();
+          return const MainApp();  // Change from HomeScreen to MainApp
         }
         return const LoginScreen();
       },

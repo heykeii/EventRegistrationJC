@@ -50,4 +50,9 @@ class UserService {
     final query = await usersCollection.get();
     return query.size;
   }
+
+  Future<List<UserModel>> getAllUsers() async {
+    final query = await usersCollection.get();
+    return query.docs.map((doc) => UserModel.fromMap(doc.data() as Map<String, dynamic>)).toList();
+  }
 } 
