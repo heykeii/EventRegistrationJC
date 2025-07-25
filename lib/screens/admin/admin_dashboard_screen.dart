@@ -7,6 +7,9 @@ import '../../services/auth_service.dart';
 import 'admin_user_list_screen.dart';
 import '../event/event_create_screen.dart';
 import 'admin_analytics_screen.dart';
+import '../../services/registration_service.dart';
+import '../../models/registration_model.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 // Move brand colors to top-level so all widgets can access them
 const Color kPrimaryBeige = Color(0xFFE8DDD4);
@@ -84,10 +87,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     ),
                     const SizedBox(height: 16),
                     _SidebarIcon(
-                      icon: Icons.settings,
+                      icon: Icons.restaurant,
                       selected: _selectedIndex == 3,
                       onTap: () => setState(() => _selectedIndex = 3),
-                      tooltip: 'Settings',
+                      tooltip: 'Catering Reservations',
                       selectedColor: kPrimaryBeige,
                       iconColor: kMediumBrown,
                     ),
@@ -206,7 +209,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                         AdminEventListScreen(),
                         AdminUserListScreen(),
                         AdminAnalyticsScreen(),
-                        Center(child: Text('Settings Section Coming Soon', style: TextStyle(fontSize: 22, color: kMediumBrown))),
+                        AdminCateringReservationsScreen(),
                       ],
                     ),
                   ),
@@ -318,6 +321,186 @@ class _SummaryCard extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class AdminCateringReservationsScreen extends StatefulWidget {
+  const AdminCateringReservationsScreen({Key? key}) : super(key: key);
+
+  @override
+  State<AdminCateringReservationsScreen> createState() => _AdminCateringReservationsScreenState();
+}
+
+class _AdminCateringReservationsScreenState extends State<AdminCateringReservationsScreen> {
+  List<Map<String, dynamic>> _reservationDocs = [];
+  bool _loading = true;
+  String? _updatingId;
+
+  Color _statusColor(String status) {
+    switch (status) {
+      case 'approved':
+        return Colors.green;
+      case 'declined':
+        return Colors.red;
+      default:
+        return kGoldAccent;
+    }
+  }
+
+  Widget _buildReservationCard(Map<String, dynamic> r) {
+    final dateVal = r['eventDate'];
+    DateTime date;
+    if (dateVal is Timestamp) {
+      date = dateVal.toDate();
+    } else if (dateVal is String) {
+      date = DateTime.tryParse(dateVal) ?? DateTime.now();
+    } else {
+      date = DateTime.now();
+    }
+    final isUpdating = _updatingId == r['id'];
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16, left: 16, right: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: [
+          BoxShadow(
+            color: kMediumBrown.withOpacity(0.08),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: ListTile(
+        leading: Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: kGoldAccent.withOpacity(0.13),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: const Icon(Icons.restaurant_menu, color: kGoldAccent, size: 28),
+        ),
+        title: Text(r['eventName'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold, color: kDarkBrown)),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(r['cateringServiceType'] ?? '', style: const TextStyle(color: kMediumBrown)),
+            const SizedBox(height: 2),
+            Text('${date.toLocal().toString().split(' ')[0]} at ${r['eventLocation'] ?? ''}', style: const TextStyle(color: kLightBrown)),
+            const SizedBox(height: 6),
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: _statusColor(r['status'] ?? 'pending').withOpacity(0.13),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.circle, size: 10, color: _statusColor(r['status'] ?? 'pending')),
+                      const SizedBox(width: 6),
+                      Text(
+                        (r['status'] ?? 'pending')[0].toUpperCase() + (r['status'] ?? 'pending').substring(1),
+                        style: TextStyle(fontSize: 13, color: _statusColor(r['status'] ?? 'pending'), fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 12),
+                isUpdating
+                  ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2))
+                  : DropdownButton<String>(
+                      value: r['status'] ?? 'pending',
+                      items: const [
+                        DropdownMenuItem(value: 'pending', child: Text('Pending')),
+                        DropdownMenuItem(value: 'approved', child: Text('Approved')),
+                        DropdownMenuItem(value: 'declined', child: Text('Declined')),
+                      ],
+                      onChanged: (val) {
+                        if (val != null) _updateStatus(r['id'], val);
+                      },
+                      underline: const SizedBox(),
+                      style: const TextStyle(fontWeight: FontWeight.w500, color: kDarkBrown),
+                      dropdownColor: Colors.white,
+                    ),
+              ],
+            ),
+          ],
+        ),
+        trailing: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.person, color: kMediumBrown, size: 20),
+            Text(r['userId'] ?? '', style: const TextStyle(fontSize: 11, color: kLightBrown)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchReservations();
+  }
+
+  Future<void> _fetchReservations() async {
+    final query = await RegistrationService.db.collection('catering_reservations').get();
+    setState(() {
+      _reservationDocs = query.docs.map((doc) => {'id': doc.id, ...doc.data()}).toList();
+      _loading = false;
+    });
+  }
+
+  Future<void> _updateStatus(String docId, String status) async {
+    setState(() { _updatingId = docId; });
+    try {
+      await RegistrationService().updateReservationStatus(docId, status);
+      await _fetchReservations();
+    } catch (e) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Error'),
+          content: Text('Failed to update status:\n\n${e.toString()}'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+    }
+    setState(() { _updatingId = null; });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: kSecondaryBeige,
+      appBar: AppBar(
+        title: const Text('Catering Reservations', style: TextStyle(color: kDarkBrown)),
+        backgroundColor: kPrimaryBeige,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: kDarkBrown),
+      ),
+      body: _loading
+          ? const Center(child: CircularProgressIndicator())
+          : _reservationDocs.isEmpty
+              ? const Center(child: Text('No catering reservations found.', style: TextStyle(color: kMediumBrown)))
+              : ListView(
+                  padding: const EdgeInsets.symmetric(vertical: 24),
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                      child: Text('All Catering Reservations', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: kDarkBrown)),
+                    ),
+                    ..._reservationDocs.map(_buildReservationCard),
+                  ],
+                ),
     );
   }
 } 

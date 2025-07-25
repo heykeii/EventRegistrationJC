@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'dart:typed_data';
 import '../services/auth_service.dart';
+import 'catering_screen.dart';
 
 class MainApp extends StatefulWidget {
   const MainApp({super.key});
@@ -21,7 +22,7 @@ class _MainAppState extends State<MainApp> {
   final List<Widget> _screens = [
     const HomeScreen(),
     const EventsScreen(),
-    const ServicesScreen(),
+    const CateringScreen(), // Changed from ServicesScreen
     const ProfileScreen(),
   ];
 
@@ -62,8 +63,8 @@ class _MainAppState extends State<MainApp> {
               label: 'Events',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.restaurant_menu_rounded),
-              label: 'Services',
+              icon: Icon(Icons.restaurant), // Changed icon for Catering
+              label: 'Catering', // Changed label from Services to Catering
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.person_rounded),
@@ -156,8 +157,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             // Handle navigation based on index
             if (index == 1) { // Events
               Navigator.pushNamed(context, '/events');
-            } else if (index == 2) { // Services
-              // You can add navigation to services screen if needed
+            } else if (index == 2) { // Catering
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const CateringScreen()),
+              );
             } else if (index == 3) { // Profile
               Navigator.pushNamed(context, '/profile');
             }
@@ -1165,32 +1169,6 @@ class EventsScreen extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-class ServicesScreen extends StatelessWidget {
-  const ServicesScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF4F0EC),
-      appBar: AppBar(
-        title: const Text('Services'),
-        backgroundColor: const Color(0xFFF4F0EC),
-        elevation: 0,
-      ),
-      body: const Center(
-        child: Text(
-          'Services Screen\nComing Soon!',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 18,
-            color: Color(0xFF6B5B47),
-          ),
-        ),
-      ),
     );
   }
 }
